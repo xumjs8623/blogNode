@@ -7,8 +7,11 @@ class UserController extends Controller {
     const { ctx, service } = this;
     let params = {};
     params.limit = ctx.request.query.limit ? ctx.request.query.limit : 10;
-    params.page = ctx.request.query.page ? ctx.request.query.page : 0;
-    params.username = ctx.request.query.username ? ctx.request.query.username : '';
+    params.page = ctx.request.query.page ? Number(ctx.request.query.page) -1 : 0;
+    if (params.page < 0) {
+      params.page = 0;
+    }
+    params.keyword = ctx.request.query.keyword ? ctx.request.query.keyword : '';
     ctx.body = await service.admin.user.index(params);
   }
   async show() {
@@ -23,13 +26,16 @@ class UserController extends Controller {
   async create() {
     const { ctx, service } = this;
     ctx.validate({
-      username: {
+      userName: {
         type: 'string'
       },
       password: {
         type: 'string'
       },
       sex: {
+        type: 'string'
+      },
+      roleId: {
         type: 'string'
       }
     }, ctx.request.body);
@@ -49,9 +55,9 @@ class UserController extends Controller {
     const { ctx, service } = this;
     ctx.validate({
       id: {
-        type: 'string'
+        type: 'number'
       },
-      username: {
+      userName: {
         type: 'string'
       },
       password: {

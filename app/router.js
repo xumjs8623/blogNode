@@ -7,7 +7,7 @@ module.exports = app => {
   const { router, controller } = app;
   router.get('/', controller.home.index);
   // 后台用户登录
-  router.post('/admin/login', controller.admin.index.login);
+  router.post('/login', controller.admin.index.login);
   // 分类管理
   router.resources('category', '/admin/category', controller.admin.category);
   // 标签管理

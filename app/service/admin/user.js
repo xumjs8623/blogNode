@@ -1,7 +1,7 @@
 'use strict';
 
 const Service = require('egg').Service;
-
+const crypto = require('crypto');
 class UserService extends Service {
   /* 根据关键词，搜索用户
     @parmas {string} limit 显示条数
@@ -9,8 +9,8 @@ class UserService extends Service {
     @params {string} name 分类名称
   */
   async index(params) {
-    const result = await this.app.mysql.query(`SELECT * FROM blog_user WHERE 'username' like '%${params.usereName}%' LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
-    const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_user WHERE 'username' like '%${params.usereName}%'`);
+    const result = await this.app.mysql.query(`SELECT * FROM blog_user WHERE (userName like '%${params.keyword}%' OR name like '%${params.keyword}%' OR mobile like '%${params.keyword}%') AND deleteTag is null LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
+    const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_user WHERE (userName like '%${params.keyword}%' OR name like '%${params.keyword}%' OR mobile like '%${params.keyword}%') AND deleteTag is null`);
     return {
       tag: 'dataSuccess',
       data: result,
@@ -39,6 +39,7 @@ class UserService extends Service {
     //   }
     // }
     // 新增用户
+    params.password = crypto.createHash('md5').update(params.password).digest('hex').toLowerCase();
     const result = await this.app.mysql.insert('blog_user', params);
     if (result.affectedRows === 1) {
       return {
@@ -55,8 +56,8 @@ class UserService extends Service {
   async destroy(params) {
     let upateData = {
       id: params.id,
-      delete_tag: 1,
-      delete_time: new Date()
+      deleteTag: 1,
+      deleteTime: new Date()
     }
     const result = await this.app.mysql.update('blog_user', upateData);
     if (result.affectedRows !== 0) {
@@ -72,6 +73,10 @@ class UserService extends Service {
     }
   }
   async update(params) {
+    // 如果密码小于32位，说明前端修改过密码，不然就是加密后的密码 无需猜测加密
+    if (params.password.length < 32) {
+      params.password = crypto.createHash('md5').update(params.password).digest('hex').toLowerCase();
+    }
     const result = await this.app.mysql.update('blog_user', params);
     if (result.affectedRows === 1) {
       return {
