@@ -54,12 +54,20 @@ class UserService extends Service {
     }
   }
   async destroy(params) {
+    let ids = [];
+    if (params.id.split(',').length > 1) {
+      
+    }
+    params.id.split(',').forEach(element => {
+      ids.push(element)
+    });
     let upateData = {
-      id: params.id,
       deleteTag: 1,
       deleteTime: new Date()
     }
-    const result = await this.app.mysql.update('blog_user', upateData);
+    const result = await this.app.mysql.update('blog_user', upateData, {
+      where: { id: ids}
+    });
     if (result.affectedRows !== 0) {
       return {
         tag: 'msgSuccess',
