@@ -6,7 +6,7 @@ class CategoryController extends Controller {
   async index() {
     const {ctx, service} = this;
     let params = {};
-    params.limit = ctx.request.query.limit ? ctx.request.query.limit : 10;
+    params.limit = ctx.request.query.limit ? ctx.request.query.limit : 1000;
     params.page = ctx.request.query.page ? ctx.request.query.page : 0;
     params.name = ctx.request.query.name ? ctx.request.query.name : '';
     ctx.body = await service.admin.category.index(params);
@@ -27,7 +27,7 @@ class CategoryController extends Controller {
         type: 'string'
       },
       index: {
-        type: 'number'
+        type: 'string'
       }
     }, ctx.request.body);
     delete ctx.request.body.id;
@@ -46,6 +46,9 @@ class CategoryController extends Controller {
     const {ctx, service} = this;
     ctx.validate({
       id: {
+        type: 'number'
+      },
+      name: {
         type: 'string'
       },
       name: {

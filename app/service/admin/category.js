@@ -10,11 +10,44 @@ class CategoryService extends Service {
   */
   async index(params) {
     const result = await this.app.mysql.query(`SELECT * FROM blog_category WHERE 'name' like '%${params.name}%' LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
-    const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_category WHERE 'name' like '%${params.name}%'`);
+    let treeData = [];
+    let listData = [];
+    let newArr = []; // 将id作为键的数组
+    let getTree = (result) => {
+      result.forEach(element => {
+        newArr[element.id] = element;
+      });
+      for (let x in newArr) {
+        if (newArr[x].pid === 0) {
+          treeData.push(newArr[x]);
+        } else if (newArr[newArr[x].pid]) {
+          // 如果当前循环的元素的父级元素存在，那么将当前元素放入父级元素的children中
+          if (!newArr[newArr[x].pid].hasOwnProperty('children')) {
+            // 如果不存在元素children,那么初始化后在插入
+            newArr[newArr[x].pid]['children'] = new Array();
+            newArr[newArr[x].pid]['children'].push(newArr[x])
+          } else {
+            newArr[newArr[x].pid]['children'].push(newArr[x])
+          }
+        }
+      }
+    }
+    getTree(result);
+    let getList = (arr) => {
+      arr.forEach(element => {
+        listData.push(element);
+        if (element.hasOwnProperty('children')) {
+          getList(element.children);
+        }
+      })
+    };
+    getList(treeData);
     return {
       tag: 'dataSuccess',
-      data: result,
-      total: count[0].num
+      data: {
+        treeData: treeData,
+        listData: listData
+      }
     }
   }
   /* 根据id，进行单条搜索 
@@ -28,17 +61,8 @@ class CategoryService extends Service {
     };
   }
   async create(params) {
-    // 检测重复
-    const repeatResult = await this.app.mysql.find('blog_category', {
-      where: {name: params.name}
-    });
-    if (repeatResult) {
-      return {
-        tag: 'msgError',
-        msg: '分类名称已经存在'
-      }
-    }
     // 新增分类
+    params.createTime = new Date();
     const result = await this.app.mysql.insert('blog_category', params);
     if (result.affectedRows === 1) {
       return {
