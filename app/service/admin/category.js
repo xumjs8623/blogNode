@@ -33,15 +33,16 @@ class CategoryService extends Service {
       }
     }
     getTree(result);
-    let getList = (arr) => {
+    let getList = (arr, level) => {
       arr.forEach(element => {
+        element.level = level;
         listData.push(element);
         if (element.hasOwnProperty('children')) {
-          getList(element.children);
+          getList(element.children, level+1);
         }
       })
     };
-    getList(treeData);
+    getList(treeData, 1);
     return {
       tag: 'dataSuccess',
       data: {
@@ -77,17 +78,34 @@ class CategoryService extends Service {
     }
   }
   async destroy(params) {
-    const articleCount = await this.app.mysql.find('blog_article', {
-      where: {category_id: params.id.split(',')}
+    let ids = []; // 该分类和子分类集合
+    ids.push(params.id);
+    // 检测该分类下的子分类
+    const allCategory = await this.app.mysql.select('blog_category');
+    if (allCategory) {
+      let searchCategory = (id) => {
+        allCategory.forEach(element => {
+          if (element.pid === id) {
+            ids.push(element.id);
+            searchCategory(element.id)
+          }
+        });
+      }
+      searchCategory(params.id);
+    }
+    // 检测该分类下的文章
+    const articleCount = await this.app.mysql.select('blog_article', {
+      where: { categoryId: ids}
     });
-    if (articleCount) {
+    if (articleCount.length !== 0) {
       return {
         tag: 'msgError',
         msg: '该分类下存在文章，无法删除'
       };
     }
+    let arr = [];
     const result = await this.app.mysql.delete('blog_category', {
-      where: {id: params.id.split(',')}
+      id: ids
     });
     if (result.affectedRows !== 0) {
       return {

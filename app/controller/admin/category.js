@@ -40,6 +40,7 @@ class CategoryController extends Controller {
         type: 'string'
       }
     }, ctx.params);
+    ctx.params.id = Number(ctx.params.id);
     ctx.body = await service.admin.category.destroy(ctx.params);
   }
   async update() {
