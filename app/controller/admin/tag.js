@@ -7,8 +7,8 @@ class TagController extends Controller {
     const { ctx, service } = this;
     let params = {};
     params.limit = ctx.request.query.limit ? ctx.request.query.limit : 10;
-    params.page = ctx.request.query.page ? ctx.request.query.page : 0;
-    params.tag = ctx.request.query.tag ? ctx.request.query.tag : '';
+    params.page = ctx.request.query.page ? (ctx.request.query.page-1) : 0;
+    params.keyword = ctx.request.query.keyword ? ctx.request.query.keyword : '';
     ctx.body = await service.admin.tag.index(params);
   }
   async show() {
@@ -23,7 +23,7 @@ class TagController extends Controller {
   async create() {
     const { ctx, service } = this;
     ctx.validate({
-      tag: {
+      name: {
         type: 'string'
       }
     }, ctx.request.body);
@@ -43,9 +43,9 @@ class TagController extends Controller {
     const { ctx, service } = this;
     ctx.validate({
       id: {
-        type: 'string'
+        type: 'number'
       },
-      tag: {
+      name: {
         type: 'string'
       }
     }, ctx.request.body);

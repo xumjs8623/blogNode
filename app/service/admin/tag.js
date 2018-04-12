@@ -9,8 +9,9 @@ class TagService extends Service {
     @params {string} name 分类名称
   */
   async index(params) {
-    const result = await this.app.mysql.query(`SELECT * FROM blog_tag WHERE 'name' like '%${params.name}%' LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
-    const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_tag WHERE 'name' like '%${params.name}%'`);
+    console.log([params.keyword, Number(params.limit) * Number(params.page), Number(params.limit)])
+    const result = await this.app.mysql.query(`SELECT * FROM blog_tag WHERE name like '%${params.keyword}%' LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
+    const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_tag WHERE name like '%${params.keyword}%'`);
     return {
       tag: 'dataSuccess',
       data: result,
@@ -28,9 +29,10 @@ class TagService extends Service {
     };
   }
   async create(params) {
+    params.createTime = new Date();
     // 检测重复
-    const repeatResult = await this.app.mysql.find('blog_tag', {
-      where: { name: params.name }
+    const repeatResult = await this.app.mysql.get('blog_tag', {
+      name: params.name
     });
     if (repeatResult) {
       return {
@@ -53,14 +55,13 @@ class TagService extends Service {
     }
   }
   async destroy(params) {
-    
     const result = await this.app.mysql.delete('blog_tag', {
-      where: { id: params.id.split(',') }
+      id: params.id.split(',')
     });
     const tagArticle = await this.app.mysql.delete('blog_tag_article', {
-      where: {tag_id: params.id.split(',')}
+      tagId: params.id.split(',')
     })
-    if (result.affectedRows !== 0 && tagArticle.affectedRows !== 0) {
+    if (result.affectedRows !== 0) {
       return {
         tag: 'msgSuccess',
         msg: '删除成功'
