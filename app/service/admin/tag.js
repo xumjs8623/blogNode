@@ -9,7 +9,6 @@ class TagService extends Service {
     @params {string} name 分类名称
   */
   async index(params) {
-    console.log([params.keyword, Number(params.limit) * Number(params.page), Number(params.limit)])
     const result = await this.app.mysql.query(`SELECT * FROM blog_tag WHERE name like '%${params.keyword}%' LIMIT ${Number(params.limit) * Number(params.page)}, ${Number(params.limit)}`);
     const count = await this.app.mysql.query(`SELECT COUNT(id) AS num FROM blog_tag WHERE name like '%${params.keyword}%'`);
     return {
