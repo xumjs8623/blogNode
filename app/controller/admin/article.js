@@ -8,7 +8,7 @@ class ArticleController extends Controller {
     let params = {};
     params.limit = ctx.request.query.limit ? ctx.request.query.limit : 10;
     params.page = ctx.request.query.page ? ctx.request.query.page : 0;
-    params.name = ctx.request.query.name ? ctx.request.query.name : '';
+    params.keyword = ctx.request.query.keyword ? ctx.request.query.keyword : '';
     ctx.body = await service.admin.article.index(params);
   }
   async show() {
@@ -26,7 +26,7 @@ class ArticleController extends Controller {
       title: {
         type: 'string'
       },
-      category_id: {
+      categoryId: {
         type: 'number'
       }
     }, ctx.request.body);
