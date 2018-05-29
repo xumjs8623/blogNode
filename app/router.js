@@ -6,6 +6,16 @@
 module.exports = app => {
   const { router, controller } = app;
   router.get('/', controller.home.index);
+  /** --------------------前台------------------------ */
+  // 获取文章列表
+  router.get('/home/article', controller.home.article.index);
+  // 获取文章详情
+  router.get('/home/article/:id', controller.home.article.show);
+  // 获取分类
+  router.get('/home/category', controller.home.category.index);
+  // 获取标签
+  router.get('/home/tag', controller.home.tag.index);
+  /** --------------------后台------------------------ */
   // 后台用户登录
   router.post('/login', controller.admin.index.login);
   // 分类管理
