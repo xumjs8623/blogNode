@@ -3,7 +3,7 @@
 const Service = require('egg').Service;
 
 class TagService extends Service {
-  /* 根据关键词，搜索分类 
+  /* 根据关键词，搜索分类
     @parmas {string} limit 显示条数
     @params {string} page 页码
     @params {string} name 分类名称
@@ -17,7 +17,7 @@ class TagService extends Service {
       total: count[0].num
     }
   }
-  /* 根据id，进行单条搜索 
+  /* 根据id，进行单条搜索
     @params {string} id 分类id
   */
   async show(params) {
@@ -54,6 +54,18 @@ class TagService extends Service {
     }
   }
   async destroy(params) {
+    let tagIds = params.id.split(',');
+    let articleCountSql = [];
+    for (let i = 0, len = tagIds.length; i < len; i++) {
+      articleCountSql.push(` tagId = ${tagIds[i]}`);
+    }
+    const articleResult = await this.app.mysql.query(`SELECT * FROM blog_tag_article WHERE ${articleCountSql.join(',')}`);
+    if (articleResult.length !== 0) {
+      return {
+        tag: 'msgError',
+        msg: '该标签有文章关联, 无法删除'
+      };
+    }
     const result = await this.app.mysql.delete('blog_tag', {
       id: params.id.split(',')
     });

@@ -46,13 +46,13 @@ class ArticleController extends Controller {
     const { ctx, service } = this;
     ctx.validate({
       id: {
-        type: 'string'
+        type: 'number'
       },
       title: {
         type: 'string'
       },
-      category_id: {
-        type: 'string'
+      categoryId: {
+        type: 'number'
       }
     }, ctx.request.body);
     ctx.body = await service.admin.article.update(ctx.request.body);

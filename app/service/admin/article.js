@@ -96,7 +96,22 @@ class ArticleService extends Service {
     }
   }
   async update(params) {
+    let tagIds = [];
+    if (params.hasOwnProperty('tags')) {
+      tagIds = params.tags;
+      delete params.tags;
+    }
     const result = await this.app.mysql.update('blog_article', params);
+    await this.app.mysql.query(`DELETE FROM blog_tag_article WHERE articleId = ${params.id}`);
+    if (tagIds.length !== 0) {
+      let valSql = [];
+      for (let x in tagIds) {
+        valSql.push(`('${params.id}','${tagIds[x]}')`);
+      }
+      let sqlStr = `INSERT INTO blog_tag_article (articleId, tagId) VALUES ${valSql.join(',')};`;
+      const tagInsert = await this.app.mysql.query(sqlStr);
+      console.log(tagInsert);
+    }
     if (result.affectedRows === 1) {
       return {
         tag: 'msgSuccess',
